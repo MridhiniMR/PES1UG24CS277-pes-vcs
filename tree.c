@@ -142,6 +142,10 @@ TreeEntry *te = &tree.entries[tree.count++];
 te->mode = MODE_FILE;
 strcpy(te->name, "file.txt");
 te->hash = blob_id;
+void *data;
+size_t len;
+
+if (tree_serialize(&tree, &data, &len) != 0) return -1;
     (void)id_out;
     return -1;
 }
