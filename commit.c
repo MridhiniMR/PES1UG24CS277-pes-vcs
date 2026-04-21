@@ -247,4 +247,19 @@ if (has_parent) {
         "tree %s\nauthor student\ndate %ld\n\n%s\n",
         tree_hex, time(NULL), message);
 }
+object_write(OBJ_COMMIT, buffer, strlen(buffer), commit_id_out);
+
+char ref_path[512];
+snprintf(ref_path, sizeof(ref_path), "%s/main", REFS_DIR);
+
+FILE *rf = fopen(ref_path, "w");
+if (!rf) return -1;
+
+char hex[HASH_HEX_SIZE + 1];
+hash_to_hex(commit_id_out, hex);
+
+fprintf(rf, "%s\n", hex);
+fclose(rf);
+
+return 0;
 }
