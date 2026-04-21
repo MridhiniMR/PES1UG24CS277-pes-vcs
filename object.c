@@ -157,6 +157,19 @@ return 0;
 // Returns 0 on success, -1 on error (file not found, corrupt, etc.).
 int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_t *len_out) {
     // TODO: Implement
+    char path[512];
+object_path(id, path, sizeof(path));
+
+FILE *fp = fopen(path, "rb");
+if (!fp) return -1;
+
+fseek(fp, 0, SEEK_END);
+long size = ftell(fp);
+rewind(fp);
+
+unsigned char *buffer = malloc(size);
+fread(buffer, 1, size, fp);
+fclose(fp);
     (void)id; (void)type_out; (void)data_out; (void)len_out;
     return -1;
 }
