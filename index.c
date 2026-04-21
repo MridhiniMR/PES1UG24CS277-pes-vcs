@@ -141,6 +141,22 @@ int index_load(Index *index) {
 
 FILE *fp = fopen(INDEX_FILE, "r");
 if (!fp) return 0;
+while (1) {
+    IndexEntry *e = &index->entries[index->count];
+
+    char hash_hex[HASH_HEX_SIZE + 1];
+
+    if (fscanf(fp, "%o %s %ld %ld %s\n",
+               &e->mode,
+               hash_hex,
+               &e->mtime_sec,
+               &e->size,
+               e->path) != 5)
+        break;
+
+    hex_to_hash(hash_hex, &e->hash);
+    index->count++;
+}
     (void)index;
     return -1;
 }
