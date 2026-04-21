@@ -195,8 +195,13 @@ for (int i = 0; i < index->count; i++) {
             e->size,
             e->path);
 }
-    (void)index;
-    return -1;
+fflush(fp);
+fsync(fileno(fp));
+fclose(fp);
+
+rename(INDEX_FILE ".tmp", INDEX_FILE);
+return 0;
+    
 }
 
 // Stage a file for the next commit.
