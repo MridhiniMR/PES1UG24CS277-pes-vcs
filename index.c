@@ -234,6 +234,18 @@ ObjectID id;
 object_write(OBJ_BLOB, data, size, &id);
 
 free(data);
-    (void)index; (void)path;
-    return -1;
+IndexEntry *e = index_find(index, path);
+if (!e) {
+    e = &index->entries[index->count++];
+}
+
+e->mode = get_file_mode(path);
+e->hash = id;
+e->mtime_sec = st.st_mtime;
+e->size = st.st_size;
+strcpy(e->path, path);
+
+index_save(index);
+return 0;
+   
 }
