@@ -230,4 +230,21 @@ if (f) {
     }
     fclose(f);
 }
+char tree_hex[HASH_HEX_SIZE + 1];
+hash_to_hex(&tree_id, tree_hex);
+
+char parent_hex[HASH_HEX_SIZE + 1];
+if (has_parent) hash_to_hex(&parent_id, parent_hex);
+
+char buffer[4096];
+
+if (has_parent) {
+    snprintf(buffer, sizeof(buffer),
+        "tree %s\nparent %s\nauthor student\ndate %ld\n\n%s\n",
+        tree_hex, parent_hex, time(NULL), message);
+} else {
+    snprintf(buffer, sizeof(buffer),
+        "tree %s\nauthor student\ndate %ld\n\n%s\n",
+        tree_hex, time(NULL), message);
+}
 }
