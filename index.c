@@ -176,6 +176,25 @@ int index_save(const Index *index) {
     // (See Lab Appendix for logical steps)
     FILE *fp = fopen(INDEX_FILE ".tmp", "w");
 if (!fp) return -1;
+int compare_entries(const void *a, const void *b) {
+    return strcmp(((IndexEntry *)a)->path, ((IndexEntry *)b)->path);
+}
+
+qsort((void *)index->entries, index->count, sizeof(IndexEntry), compare_entries);
+
+for (int i = 0; i < index->count; i++) {
+    const IndexEntry *e = &index->entries[i];
+
+    char hex[HASH_HEX_SIZE + 1];
+    hash_to_hex(&e->hash, hex);
+
+    fprintf(fp, "%o %s %ld %ld %s\n",
+            e->mode,
+            hex,
+            e->mtime_sec,
+            e->size,
+            e->path);
+}
     (void)index;
     return -1;
 }
