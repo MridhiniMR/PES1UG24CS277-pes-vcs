@@ -139,11 +139,12 @@ while (1) {
 
     callback(&current, &commit, ctx);
 
-    if (!commit.parent) break;
+    if (!commit.has_parent) break;
 
-    current = *commit.parent;
-    free(data);
+current = commit.parent;
+free(data);
 }
+return 0;
 }
 
 // Read the current HEAD commit hash.
@@ -217,13 +218,11 @@ int head_update(const ObjectID *new_commit) {
 int commit_create(const char *message, ObjectID *commit_id_out) {
     // TODO: Implement commit creation
     // (See Lab Appendix for logical steps)
-    Index index;
-if (index_load(&index) != 0) return -1;
+ 
 
 ObjectID tree_id;
 if (tree_from_index(&tree_id) != 0) return -1;
-    (void)message; (void)commit_id_out;
-    return -1;
+    
     ObjectID parent_id;
 int has_parent = 0;
 
@@ -261,26 +260,16 @@ char buffer[4096];
 
 if (has_parent) {
     snprintf(buffer, sizeof(buffer),
-        "tree %s\nparent %s\nauthor student\ndate %ld\n\n%s\n",
-        tree_hex, parent_hex, time(NULL), message);
+        "tree %s\nparent %s\nauthor student %ld\ncommitter student %ld\n\n%s",
+        tree_hex, parent_hex, time(NULL), time(NULL), message);
 } else {
     snprintf(buffer, sizeof(buffer),
-        "tree %s\nauthor student\ndate %ld\n\n%s\n",
-        tree_hex, time(NULL), message);
+        "tree %s\nauthor student %ld\ncommitter student %ld\n\n%s",
+        tree_hex, time(NULL), time(NULL), message);
 }
 object_write(OBJ_COMMIT, buffer, strlen(buffer), commit_id_out);
 
-char ref_path[512];
-snprintf(ref_path, sizeof(ref_path), "%s/main", REFS_DIR);
-
-FILE *rf = fopen(ref_path, "w");
-if (!rf) return -1;
-
-char hex[HASH_HEX_SIZE + 1];
-hash_to_hex(commit_id_out, hex);
-
-fprintf(rf, "%s\n", hex);
-fclose(rf);
+head_update(commit_id_out);
 
 return 0;
 }
