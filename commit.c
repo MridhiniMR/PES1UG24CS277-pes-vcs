@@ -203,4 +203,31 @@ ObjectID tree_id;
 if (tree_from_index(&tree_id) != 0) return -1;
     (void)message; (void)commit_id_out;
     return -1;
+    ObjectID parent_id;
+int has_parent = 0;
+
+FILE *f = fopen(HEAD_FILE, "r");
+if (f) {
+    char ref[256];
+    if (fgets(ref, sizeof(ref), f)) {
+        ref[strcspn(ref, "\n")] = 0;
+
+        if (strncmp(ref, "ref: ", 5) == 0) {
+            char ref_path[512];
+            snprintf(ref_path, sizeof(ref_path), ".pes/%s", ref + 5);
+
+            FILE *rf = fopen(ref_path, "r");
+            if (rf) {
+                char hash_hex[HASH_HEX_SIZE + 1];
+                if (fgets(hash_hex, sizeof(hash_hex), rf)) {
+                    hash_hex[strcspn(hash_hex, "\n")] = 0;
+                    hex_to_hash(hash_hex, &parent_id);
+                    has_parent = 1;
+                }
+                fclose(rf);
+            }
+        }
+    }
+    fclose(f);
+}
 }
