@@ -103,26 +103,47 @@ int commit_serialize(const Commit *commit, void **data_out, size_t *len_out) {
 
 // Walk commit history from HEAD to the root.
 int commit_walk(commit_walk_fn callback, void *ctx) {
-    ObjectID id;
-    if (head_read(&id) != 0) return -1;
+   FILE *f = fopen(HEAD_FILE, "r");
+if (!f) return -1;
 
-    while (1) {
-        ObjectType type;
-        void *raw;
-        size_t raw_len;
-        if (object_read(&id, &type, &raw, &raw_len) != 0) return -1;
+char ref[256];
+fgets(ref, sizeof(ref), f);
+fclose(f);
 
-        Commit c;
-        int rc = commit_parse(raw, raw_len, &c);
-        free(raw);
-        if (rc != 0) return -1;
+ref[strcspn(ref, "\n")] = 0;
 
-        callback(&id, &c, ctx);
+char ref_path[512];
+snprintf(ref_path, sizeof(ref_path), ".pes/%s", ref + 5);
 
-        if (!c.has_parent) break;
-        id = c.parent;
-    }
-    return 0;
+FILE *rf = fopen(ref_path, "r");
+if (!rf) return -1;
+
+char hash_hex[HASH_HEX_SIZE + 1];
+fgets(hash_hex, sizeof(hash_hex), rf);
+fclose(rf);
+
+hash_hex[strcspn(hash_hex, "\n")] = 0;
+
+ObjectID current;
+hex_to_hash(hash_hex, &current);
+
+while (1) {
+    ObjectType type;
+    void *data;
+    size_t len;
+
+    if (object_read(&current, &type, &data, &len) != 0) break;
+
+    Commit commit;
+    commit_parse(data, len, &commit);
+
+    callback(&current, &commit, ctx);
+
+    if (!commit.parent) break;
+
+    current = *commit.parent;
+    free(data);
+}
 }
 
 // Read the current HEAD commit hash.
