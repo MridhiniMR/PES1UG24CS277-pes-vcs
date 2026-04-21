@@ -134,6 +134,14 @@ int tree_from_index(ObjectID *id_out) {
     // (See Lab Appendix for logical steps)
     Tree tree;
 tree.count = 0;
+const char *content = "hello";
+ObjectID blob_id;
+object_write(OBJ_BLOB, content, strlen(content), &blob_id);
+
+TreeEntry *te = &tree.entries[tree.count++];
+te->mode = MODE_FILE;
+strcpy(te->name, "file.txt");
+te->hash = blob_id;
     (void)id_out;
     return -1;
 }
