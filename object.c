@@ -170,6 +170,30 @@ rewind(fp);
 unsigned char *buffer = malloc(size);
 fread(buffer, 1, size, fp);
 fclose(fp);
+ObjectID verify;
+compute_hash(buffer, size, &verify);
+
+if (memcmp(id->hash, verify.hash, HASH_SIZE) != 0) {
+    free(buffer);
+    return -1;
+}
+
+char *null_pos = memchr(buffer, '\0', size);
+
+char type_str[10];
+size_t data_size;
+sscanf((char *)buffer, "%s %zu", type_str, &data_size);
+
+*data_out = malloc(data_size);
+memcpy(*data_out, null_pos + 1, data_size);
+*len_out = data_size;
+
+if (strcmp(type_str, "blob") == 0) *type_out = OBJ_BLOB;
+else if (strcmp(type_str, "tree") == 0) *type_out = OBJ_TREE;
+else *type_out = OBJ_COMMIT;
+
+free(buffer);
+return 0;
     (void)id; (void)type_out; (void)data_out; (void)len_out;
     return -1;
 }
