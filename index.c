@@ -174,6 +174,8 @@ while (1) {
 int index_save(const Index *index) {
     // TODO: Implement atomic index saving
     // (See Lab Appendix for logical steps)
+    FILE *fp = fopen(INDEX_FILE ".tmp", "w");
+if (!fp) return -1;
     (void)index;
     return -1;
 }
