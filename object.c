@@ -107,6 +107,28 @@ memcpy(full, header, header_len);
 memcpy(full + header_len, data, len);
 
 compute_hash(full, header_len + len, id_out);
+char path[512];
+object_path(id_out, path, sizeof(path));
+
+char dir[512];
+strncpy(dir, path, strlen(path) - (HASH_HEX_SIZE - 2));
+dir[strlen(path) - (HASH_HEX_SIZE - 2)] = '\0';
+
+mkdir(OBJECTS_DIR, 0755);
+mkdir(dir, 0755);
+
+char temp[600];
+snprintf(temp, sizeof(temp), "%s.tmp", path);
+
+int fd = open(temp, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+write(fd, full, header_len + len);
+fsync(fd);
+close(fd);
+
+rename(temp, path);
+free(full);
+
+return 0;
     (void)type; (void)data; (void)len; (void)id_out;
     return -1;
 }
